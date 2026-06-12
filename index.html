@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WiB – Wer wird Millionär?</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(ellipse at top, #0a2a5e 0%, #06173a 50%, #020a1c 100%);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+  .container {
+    width: 100%;
+    max-width: 900px;
+  }
+
+  /* START SCREEN */
+  .start-screen, .end-screen {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .start-screen h1, .end-screen h1 {
+    font-size: 42px;
+    font-weight: 800;
+    background: linear-gradient(180deg, #ffd87a 0%, #c4972b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 30px rgba(255, 216, 122, 0.3);
+  }
+  .start-screen h2 {
+    font-size: 22px;
+    font-weight: 400;
+    color: #b9c5e0;
+    margin-bottom: 32px;
+  }
+  .start-screen p, .end-screen p {
+    font-size: 16px;
+    color: #b9c5e0;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  .start-screen ul {
+    text-align: left;
+    max-width: 400px;
+    margin: 0 auto 32px;
+    list-style: none;
+    color: #c8d3eb;
+    font-size: 15px;
+    line-height: 2;
+  }
+  .start-screen li::before {
+    content: "→ ";
+    color: #ffd87a;
+    font-weight: bold;
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, #ffd87a 0%, #d09b2e 100%);
+    color: #1a0a00;
+    border: none;
+    padding: 14px 32px;
+    font-size: 17px;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 14px rgba(255, 216, 122, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(255, 216, 122, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* GAME SCREEN */
+  .game-screen { display: none; }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 216, 122, 0.15);
+    border-radius: 10px;
+    font-size: 14px;
+    color: #b9c5e0;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .header strong { color: #ffd87a; font-weight: 600; }
+  .tier-pill {
+    background: rgba(255, 216, 122, 0.12);
+    color: #ffd87a;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid rgba(255, 216, 122, 0.3);
+  }
+  .progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ffd87a, #ff9d2e);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .question-card {
+    background: linear-gradient(135deg, rgba(20, 50, 120, 0.6) 0%, rgba(10, 30, 80, 0.6) 100%);
+    border: 1px solid rgba(255, 216, 122, 0.25);
+    padding: 28px 28px;
+    border-radius: 14px;
+    margin-bottom: 18px;
+    font-size: 18px;
+    line-height: 1.5;
+    font-weight: 500;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .answers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .answer {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, rgba(20, 50, 120, 0.45) 0%, rgba(10, 30, 80, 0.45) 100%);
+    border: 1px solid rgba(255, 216, 122, 0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    text-align: left;
+    color: #fff;
+    transition: all 0.2s;
+    font-family: inherit;
+    line-height: 1.4;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .answer:hover:not(.disabled):not(.selected):not(.correct):not(.wrong) {
+    background: linear-gradient(135deg, rgba(255, 216, 122, 0.18) 0%, rgba(255, 157, 46, 0.18) 100%);
+    border-color: rgba(255, 216, 122, 0.6);
+    transform: translateY(-1px);
+  }
+  .answer.selected {
+    background: linear-gradient(135deg, #d09b2e 0%, #a06f1a 100%);
+    border-color: #ffd87a;
+    color: #1a0a00;
+    font-weight: 600;
+    animation: pulseSelect 0.8s infinite;
+  }
+  .answer.correct {
+    background: linear-gradient(135deg, #2da14a 0%, #1d7234 100%);
+    border-color: #5dd97e;
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 0 20px rgba(93, 217, 126, 0.5);
+    animation: none;
+  }
+  .answer.wrong {
+    background: linear-gradient(135deg, #c93232 0%, #8e2222 100%);
+    border-color: #ff7575;
+    color: #fff;
+    font-weight: 600;
+    animation: none;
+  }
+  .answer.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  @keyframes pulseSelect {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 216, 122, 0.6); }
+    50% { box-shadow: 0 0 0 8px rgba(255, 216, 122, 0); }
+  }
+  .letter {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 216, 122, 0.15);
+    color: #ffd87a;
+    border-radius: 6px;
+    font-weight: 700;
+    flex-shrink: 0;
+    font-size: 14px;
+    border: 1px solid rgba(255, 216, 122, 0.4);
+  }
+  .answer.selected .letter,
+  .answer.correct .letter,
+  .answer.wrong .letter {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .hint-box {
+    margin-top: 14px;
+    background: rgba(255, 216, 122, 0.08);
+    border: 1px solid rgba(255, 216, 122, 0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #ffe7b0;
+    line-height: 1.5;
+    display: none;
+  }
+  .hint-box.show { display: block; }
+  .hint-box strong { color: #ffd87a; font-weight: 600; }
+
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 22px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .jokers { display: flex; gap: 8px; flex-wrap: wrap; }
+  .joker {
+    padding: 9px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 216, 122, 0.35);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #ffd87a;
+    font-family: inherit;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.15s;
+  }
+  .joker:hover:not(.used) {
+    background: rgba(255, 216, 122, 0.15);
+    transform: translateY(-1px);
+  }
+  .joker.used {
+    opacity: 0.25;
+    cursor: not-allowed;
+    text-decoration: line-through;
+  }
+  .btn-next {
+    padding: 11px 22px;
+    background: linear-gradient(180deg, #ffd87a 0%, #d09b2e 100%);
+    color: #1a0a00;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    box-shadow: 0 3px 10px rgba(255, 216, 122, 0.3);
+    display: none;
+  }
+  .btn-next:hover { transform: translateY(-2px); box-shadow: 0 5px 14px rgba(255, 216, 122, 0.4); }
+
+  /* END SCREEN */
+  .end-screen { display: none; }
+  .end-score {
+    font-size: 56px;
+    font-weight: 800;
+    background: linear-gradient(180deg, #ffd87a 0%, #d09b2e 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 24px 0;
+    text-shadow: 0 0 40px rgba(255, 216, 122, 0.4);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 500px;
+    margin: 0 auto 28px;
+  }
+  .stat {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 216, 122, 0.2);
+    padding: 14px 8px;
+    border-radius: 10px;
+  }
+  .stat-num { font-size: 24px; font-weight: 700; color: #ffd87a; }
+  .stat-label { font-size: 12px; color: #8da0c0; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+  @media (max-width: 600px) {
+    .answers { grid-template-columns: 1fr; }
+    .question-card { font-size: 16px; padding: 22px 20px; }
+    .start-screen h1, .end-screen h1 { font-size: 32px; }
+    .end-score { font-size: 44px; }
+    .header { font-size: 13px; padding: 10px 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- START -->
+  <div class="start-screen" id="start-screen">
+    <h1>Wer wird WiB-Profi?</h1>
+    <h2>Das Quiz zur Sozialen Marktwirtschaft</h2>
+    <p>35 Fragen in 7 Schwierigkeitsstufen –<br>von <em>sehr leicht</em> bis <em>Profi</em>.</p>
+    <ul>
+      <li>Sozialversicherung &amp; die 5 Säulen</li>
+      <li>Arbeit, Beruf und Digitalisierung</li>
+      <li>Rechtliche Rahmen der Ausbildung</li>
+      <li>Geldinstitute und Zahlungsverkehr</li>
+    </ul>
+    <p style="font-size: 14px; opacity: 0.8;">Drei Joker: <strong style="color:#ffd87a;">50 : 50</strong> &nbsp;·&nbsp; <strong style="color:#ffd87a;">Tipp</strong> &nbsp;·&nbsp; <strong style="color:#ffd87a;">Skip</strong></p>
+    <br>
+    <button class="btn-primary" id="start-btn">Quiz starten</button>
+  </div>
+
+  <!-- GAME -->
+  <div class="game-screen" id="game-screen">
+    <div class="header">
+      <span>Frage <strong id="num">1</strong> / 35</span>
+      <span class="tier-pill" id="tier-pill">Stufe 1 · sehr leicht</span>
+      <span>Punkte: <strong id="score">0</strong></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="fill"></div></div>
+    <div class="question-card" id="question"></div>
+    <div class="answers" id="answers"></div>
+    <div class="hint-box" id="hint-box"></div>
+    <div class="controls">
+      <div class="jokers">
+        <button class="joker" data-jk="5050">50 : 50</button>
+        <button class="joker" data-jk="tipp">Tipp</button>
+        <button class="joker" data-jk="skip">Skip</button>
+      </div>
+      <button class="btn-next" id="next-btn">Nächste Frage →</button>
+    </div>
+  </div>
+
+  <!-- END -->
+  <div class="end-screen" id="end-screen">
+    <h1 id="end-title">Geschafft!</h1>
+    <p id="end-msg"></p>
+    <div class="end-score" id="end-score">0 / 35</div>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-num" id="stat-correct">0</div><div class="stat-label">Richtig</div></div>
+      <div class="stat"><div class="stat-num" id="stat-wrong">0</div><div class="stat-label">Falsch</div></div>
+      <div class="stat"><div class="stat-num" id="stat-skipped">0</div><div class="stat-label">Übersprungen</div></div>
+    </div>
+    <button class="btn-primary" id="restart-btn">Nochmal spielen</button>
+  </div>
+
+</div>
+
+<script>
+const TIER_NAMES = {1:"sehr leicht", 2:"leicht", 3:"mittel", 4:"mittel +", 5:"schwer", 6:"schwer +", 7:"Profi"};
+
+const QUESTIONS = [
+  // STUFE 1 – sehr leicht (WWM-Spielniveau, teils spielerische Distraktoren)
+  {tier:1, q:"Welche Karte braucht man am Geldautomaten, um Geld abzuheben?",
+   a:["Girocard (frühere EC-Karte)","Glückwunschkarte","Visitenkarte","Bibliotheksausweis"], c:0,
+   tipp:"Sie ist von der eigenen Bank und steckt im Geldbeutel."},
+  {tier:1, q:"Was bedeutet die Abkürzung „Azubi“?",
+   a:["Aushilfslehrer:in","Auszubildende:r","Außenhandelskaufmann/-frau","Außendienstmitarbeiter:in"], c:1,
+   tipp:"Alle vier Antworten beginnen mit „A“ – aber nur eine ist Alltagsbegriff."},
+  {tier:1, q:"Wie viele Säulen hat die Sozialversicherung in Deutschland?",
+   a:["3","4","5","6"], c:2,
+   tipp:"Eine Hand voll – passt genau."},
+  {tier:1, q:"Welche Versicherung zahlt die Behandlung beim Arzt?",
+   a:["Rentenversicherung","Hausratversicherung","Pflegeversicherung","Krankenversicherung"], c:3,
+   tipp:"Der Name verrät es."},
+  {tier:1, q:"Wo eröffnet man typischerweise ein Girokonto?",
+   a:["In einer Bank oder Sparkasse","In der Apotheke","Beim Finanzamt","Im Supermarkt"], c:0,
+   tipp:"Wer kümmert sich um Geld?"},
+
+  // STUFE 2 – leicht (Sprache einfach, klare Zuordnungen)
+  {tier:2, q:"Was ist eine duale Berufsausbildung?",
+   a:["Eine Ausbildung in zwei Berufen gleichzeitig","Eine Ausbildung an nur zwei Wochentagen","Eine Ausbildung mit doppelter Vergütung","Eine Ausbildung in Betrieb und Berufsschule"], c:3,
+   tipp:"„Dual“ bedeutet zwei – aber welche zwei Lernorte?"},
+  {tier:2, q:"Welche Versicherung zahlt monatlich Geld, wenn man im Ruhestand ist?",
+   a:["Krankenversicherung","Arbeitslosenversicherung","Rentenversicherung","Hausratversicherung"], c:2,
+   tipp:"Das Wort steckt im Namen."},
+  {tier:2, q:"Welche dieser Dienstleistungen bietet eine Bank typischerweise an?",
+   a:["Friseurtermine","Konten und Kredite","Steuererklärungen für Privatleute","Autoreparaturen"], c:1,
+   tipp:"Banken sind Geldinstitute."},
+  {tier:2, q:"Wie lange dauert eine duale Berufsausbildung typischerweise?",
+   a:["2 bis 3,5 Jahre","1 Jahr","3 Monate","6 bis 8 Jahre"], c:0,
+   tipp:"Eine Friseurausbildung ist kürzer als die einer Industriemechanikerin."},
+  {tier:2, q:"Was bekommt ein Azubi vom Ausbildungsbetrieb?",
+   a:["Nichts, Ausbildung ist unbezahlt","Nur Fahrtkosten und Essensgeld","Eine monatliche Ausbildungsvergütung","Eine Belohnung am Jahresende"], c:2,
+   tipp:"Ausbildung ist Arbeit – und Arbeit wird bezahlt."},
+
+  // STUFE 3 – mittel (Lehrplanniveau, plausible Distraktoren, einfache Sprache)
+  {tier:3, q:"Welche Versicherung übernimmt die Behandlung nach einem Arbeitsunfall?",
+   a:["Krankenversicherung","Unfallversicherung","Haftpflichtversicherung","Rentenversicherung"], c:1,
+   tipp:"Arbeitsunfälle haben eine eigene Säule."},
+  {tier:3, q:"Was ist ein Dauerauftrag?",
+   a:["Eine regelmäßige, automatische Überweisung","Eine einmalige Überweisung","Ein langer Arbeitsvertrag","Eine Abbuchung durch den Empfänger"], c:0,
+   tipp:"Der Name verrät es: was dauert hier?"},
+  {tier:3, q:"Welche Versicherung zahlt, wenn man seinen Job verliert?",
+   a:["Rentenversicherung","Pflegeversicherung","Krankenversicherung","Arbeitslosenversicherung"], c:3,
+   tipp:"Der Name passt genau zum Fall."},
+  {tier:3, q:"Welche Schlüsselkompetenz ist in der digitalen Arbeitswelt besonders wichtig?",
+   a:["Schnelles Tippen","Auswendiglernen","Lebenslanges Lernen","Gute Handschrift"], c:2,
+   tipp:"Die Technik verändert sich ständig – was muss man also können?"},
+  {tier:3, q:"Welche Pflicht hat ein Auszubildender?",
+   a:["Eigenes Werkzeug einkaufen","Sorgfältig arbeiten und Anweisungen befolgen","Privatdienste für den Chef übernehmen","Die Ausbildungsmaterialien selbst bezahlen"], c:1,
+   tipp:"Was kostet, geht zu Lasten des Betriebs."},
+
+  // STUFE 4 – mittel + (kleine Anwendungsfragen, weiterhin einfach formuliert)
+  {tier:4, q:"Welche Versicherung übernimmt die Kosten für einen ambulanten Pflegedienst zu Hause?",
+   a:["Krankenversicherung","Unfallversicherung","Pflegeversicherung","Rentenversicherung"], c:2,
+   tipp:"Auch hier verrät der Name die Antwort."},
+  {tier:4, q:"Was ist der Unterschied zwischen Kreditkarte und Girocard?",
+   a:["Bei der Girocard wird sofort vom Konto abgebucht, bei der Kreditkarte erst später","Es gibt keinen Unterschied","Mit der Kreditkarte kann man kein Bargeld abheben","Die Girocard gibt es nur in Deutschland, die Kreditkarte nur im Ausland"], c:0,
+   tipp:"Wann wird das Geld jeweils tatsächlich abgebucht?"},
+  {tier:4, q:"Welcher Weg führt direkt zu einem anerkannten Berufsabschluss?",
+   a:["Ein längeres Praktikum","Ein Bundesfreiwilligendienst","Ein Freiwilliges Soziales Jahr","Eine duale Berufsausbildung"], c:3,
+   tipp:"Drei davon sind Orientierung, eine ist Berufsausbildung."},
+  {tier:4, q:"Was passiert mit den Beiträgen zur gesetzlichen Rentenversicherung?",
+   a:["Sie werden auf einem persönlichen Konto gespart","Sie finanzieren die heutigen Rentenzahlungen","Sie werden in Aktien angelegt","Sie gehen in den Staatshaushalt"], c:1,
+   tipp:"Generationenvertrag: die Jungen zahlen für die Alten."},
+  {tier:4, q:"Welcher Beruf gilt aktuell als Mangelberuf mit guten Einstellungschancen?",
+   a:["Pflegefachkraft","Bankkaufmann/-frau im Schalterdienst","Industriekaufmann/-frau im klassischen Büro","Verwaltungsangestellte:r ohne IT-Kenntnisse"], c:0,
+   tipp:"Demografischer Wandel: wer wird immer mehr gebraucht?"},
+
+  // STUFE 5 – schwer (echte Lehrplaninhalte, Distraktoren erfordern Wissen)
+  {tier:5, q:"Welche Versicherung finanziert eine Umschulung, wenn jemand nach einem Arbeitsunfall den alten Beruf nicht mehr ausüben kann?",
+   a:["Krankenversicherung","Arbeitslosenversicherung","Rentenversicherung","Unfallversicherung"], c:3,
+   tipp:"Der Unfall passierte bei der Arbeit – das bleibt entscheidend."},
+  {tier:5, q:"Wofür wird typischerweise KEIN Kredit aufgenommen?",
+   a:["Hauskauf","Wochenendeinkauf","Wohnungseinrichtung","Autokauf"], c:1,
+   tipp:"Kredite lohnen sich erst ab größeren Summen."},
+  {tier:5, q:"Wofür braucht ein Auszubildender ein Berichtsheft?",
+   a:["Zum Schreiben von Bewerbungen","Zum Sammeln von Krankmeldungen","Zum Dokumentieren der Ausbildungsinhalte und Tätigkeiten","Zum Notieren der Pausenzeiten"], c:2,
+   tipp:"Es heißt „Berichts“-Heft – worüber wird berichtet?"},
+  {tier:5, q:"Welche Aussage zur Probezeit in der Berufsausbildung ist KORREKT?",
+   a:["In der Probezeit kann ohne Frist gekündigt werden","Es gibt keine Probezeit in der Ausbildung","Die Probezeit dauert immer ein Jahr","In der Probezeit darf nur der Azubi kündigen"], c:0,
+   tipp:"„Probe“ heißt: noch nicht voll fest."},
+  {tier:5, q:"Warum verlieren klassische Industrieberufe wie Fließbandarbeit an Bedeutung?",
+   a:["Es gibt zu wenig Bewerberinnen und Bewerber","Die Bezahlung ist zu niedrig geworden","Die Industrie zieht komplett ins Ausland","Roboter und Automatisierung übernehmen viele Aufgaben"], c:3,
+   tipp:"Stichwort: Industrie 4.0."},
+
+  // STUFE 6 – schwer + (Detailwissen, anspruchsvollere Distraktoren)
+  {tier:6, q:"Wer trägt allein die Beiträge zur gesetzlichen Unfallversicherung?",
+   a:["Nur der Arbeitgeber","Nur der Arbeitnehmer","Beide zur Hälfte (paritätisch)","Der Staat aus Steuern"], c:0,
+   tipp:"Wer ist verantwortlich, wenn am Arbeitsplatz etwas passiert?"},
+  {tier:6, q:"Welche Aussage zur Finanzierung der Sozialversicherung ist KORREKT?",
+   a:["Die Beiträge zahlt allein der Staat","Sie wird vollständig aus der Mehrwertsteuer finanziert","Arbeitnehmer und Arbeitgeber teilen sich die Beiträge meist je zur Hälfte","Alle Versicherten zahlen einen gleichen festen Beitrag"], c:2,
+   tipp:"„Paritätisch“ ist das Fachwort dafür."},
+  {tier:6, q:"Was ist der Unterschied zwischen einer Überweisung und einer Lastschrift?",
+   a:["Es gibt keinen Unterschied","Eine Überweisung ist immer schneller","Eine Lastschrift gibt es nur in bar","Bei der Überweisung gibt der Zahler den Auftrag – bei der Lastschrift zieht der Empfänger das Geld ein"], c:3,
+   tipp:"Wer wird aktiv: du oder der Stromanbieter?"},
+  {tier:6, q:"Welche dieser Pflichten hat der Ausbildungsbetrieb NICHT?",
+   a:["Vermittlung der Ausbildungsinhalte","Übernahme nach bestandener Prüfung","Freistellung für den Berufsschulunterricht","Ausstellung eines Ausbildungszeugnisses"], c:1,
+   tipp:"Auch wer die Prüfung besteht, hat keinen Anspruch auf den Arbeitsplatz."},
+  {tier:6, q:"Welche Aufgabe übernimmt die Industrie- und Handelskammer (IHK) in der dualen Ausbildung?",
+   a:["Sie zahlt die Ausbildungsvergütung","Sie übernimmt den Berufsschulunterricht","Sie organisiert die Zwischen- und Abschlussprüfungen","Sie stellt das Werkzeug für den Betrieb"], c:2,
+   tipp:"Die IHK ist die zuständige Stelle für viele Prüfungen."},
+
+  // STUFE 7 – Profi (Synthese aus Lehrplan: Brutto/Netto, Haftpflicht, Vertrag, Pflege)
+  {tier:7, q:"Welche Abzüge werden direkt vom Bruttolohn eines Arbeitnehmers einbehalten?",
+   a:["Nur die Mehrwertsteuer","Sozialversicherungsbeiträge und Lohnsteuer","Nur die Sozialversicherungsbeiträge","Nur der Beitrag zur Krankenversicherung"], c:1,
+   tipp:"Schau auf eine Gehaltsabrechnung: zwei große Posten gehen ab."},
+  {tier:7, q:"Du zerstörst aus Versehen das Smartphone einer Freundin. Welche Versicherung zahlt den Schaden typischerweise?",
+   a:["Deine Krankenversicherung","Die Sozialversicherung","Die gesetzliche Unfallversicherung","Deine private Haftpflichtversicherung"], c:3,
+   tipp:"Sie heißt nicht zufällig „Haft-pflicht“."},
+  {tier:7, q:"Eine Auszubildende verdient 850 € brutto, bekommt aber weniger ausgezahlt. Warum?",
+   a:["Vom Bruttolohn werden Sozialversicherungsbeiträge und ggf. Lohnsteuer abgezogen","Der Betrieb behält einen Anteil als Sicherheit ein","Die Berufsschule berechnet Schulgeld","Der Betrieb spart für eine private Altersvorsorge"], c:0,
+   tipp:"Brutto ist immer mehr als Netto – wohin geht der Unterschied?"},
+  {tier:7, q:"Welche dieser Angaben muss NICHT zwingend in einem Ausbildungsvertrag stehen?",
+   a:["Höhe der Ausbildungsvergütung","Beginn und Dauer der Ausbildung","Liste der bisherigen Praktika","Dauer der Probezeit"], c:2,
+   tipp:"Drei sind echte Mindestinhalte nach BBiG."},
+  {tier:7, q:"Welche Aussage über die Pflegeversicherung trifft zu?",
+   a:["Sie übernimmt alle Krankenhausaufenthalte","Sie ist eine private Zusatzversicherung","Sie zahlt nur, wenn Angehörige die Pflege übernehmen","Sie greift bei dauerhafter Pflegebedürftigkeit und richtet sich nach dem Pflegegrad"], c:3,
+   tipp:"Es gibt mehrere Stufen der Pflegebedürftigkeit, die die Leistungen bestimmen."}
+];
+
+let state = {
+  current: 0,
+  score: 0,
+  wrong: 0,
+  skipped: 0,
+  answered: false,
+  jokers: {"5050": false, "tipp": false, "skip": false}
+};
+
+const $ = id => document.getElementById(id);
+
+function start() {
+  state = {current:0, score:0, wrong:0, skipped:0, answered:false, jokers:{"5050":false,"tipp":false,"skip":false}};
+  document.querySelectorAll(".joker").forEach(b => b.classList.remove("used"));
+  $("start-screen").style.display = "none";
+  $("end-screen").style.display = "none";
+  $("game-screen").style.display = "block";
+  load();
+}
+
+function load() {
+  state.answered = false;
+  const q = QUESTIONS[state.current];
+  $("num").textContent = state.current + 1;
+  $("tier-pill").textContent = "Stufe " + q.tier + " · " + TIER_NAMES[q.tier];
+  $("score").textContent = state.score;
+  $("fill").style.width = (state.current / QUESTIONS.length * 100) + "%";
+  $("question").textContent = q.q;
+  $("hint-box").classList.remove("show");
+  $("hint-box").innerHTML = "";
+  $("next-btn").style.display = "none";
+
+  const wrap = $("answers");
+  wrap.innerHTML = "";
+  const L = ["A", "B", "C", "D"];
+  q.a.forEach((t, i) => {
+    const b = document.createElement("button");
+    b.className = "answer";
+    b.innerHTML = '<span class="letter">' + L[i] + '</span><span>' + t + '</span>';
+    b.addEventListener("click", () => pick(i));
+    wrap.appendChild(b);
+  });
+}
+
+function pick(idx) {
+  if (state.answered) return;
+  const btns = document.querySelectorAll(".answer");
+  if (btns[idx].classList.contains("disabled")) return;
+  state.answered = true;
+  btns[idx].classList.add("selected");
+  const q = QUESTIONS[state.current];
+  setTimeout(() => {
+    btns.forEach(b => b.classList.add("disabled"));
+    btns[idx].classList.remove("selected");
+    if (idx === q.c) {
+      btns[idx].classList.add("correct");
+      state.score++;
+      $("score").textContent = state.score;
+    } else {
+      btns[idx].classList.add("wrong");
+      btns[q.c].classList.add("correct");
+      state.wrong++;
+    }
+    $("next-btn").style.display = "inline-block";
+  }, 900);
+}
+
+function useJoker(type) {
+  if (state.jokers[type] || state.answered) return;
+  state.jokers[type] = true;
+  document.querySelector('.joker[data-jk="' + type + '"]').classList.add("used");
+  const q = QUESTIONS[state.current];
+  const btns = document.querySelectorAll(".answer");
+
+  if (type === "5050") {
+    const wrong = [0,1,2,3].filter(i => i !== q.c);
+    wrong.sort(() => Math.random() - 0.5).slice(0, 2).forEach(i => btns[i].classList.add("disabled"));
+  } else if (type === "tipp") {
+    $("hint-box").innerHTML = '<strong>Tipp:</strong> ' + q.tipp;
+    $("hint-box").classList.add("show");
+  } else if (type === "skip") {
+    state.answered = true;
+    state.skipped++;
+    btns.forEach(b => b.classList.add("disabled"));
+    btns[q.c].classList.add("correct");
+    $("hint-box").innerHTML = 'Frage übersprungen – die richtige Antwort ist markiert.';
+    $("hint-box").classList.add("show");
+    $("next-btn").style.display = "inline-block";
+  }
+}
+
+function next() {
+  state.current++;
+  if (state.current >= QUESTIONS.length) {
+    end();
+  } else {
+    load();
+  }
+}
+
+function end() {
+  $("game-screen").style.display = "none";
+  $("end-screen").style.display = "block";
+  $("end-score").textContent = state.score + " / " + QUESTIONS.length;
+  $("stat-correct").textContent = state.score;
+  $("stat-wrong").textContent = state.wrong;
+  $("stat-skipped").textContent = state.skipped;
+
+  const pct = state.score / QUESTIONS.length;
+  let t, m;
+  if (pct === 1) { t = "WiB-Millionär:in!"; m = "Perfekt – alle 35 Fragen richtig. Das Studio dreht durch."; }
+  else if (pct >= 0.85) { t = "Sehr stark"; m = "Fast perfekt. Nur ein paar kleine Lücken."; }
+  else if (pct >= 0.7) { t = "Solides Ergebnis"; m = "Du hast die wichtigsten Themen drauf."; }
+  else if (pct >= 0.5) { t = "Knapp dabei"; m = "Schau dir die schwierigeren Themen nochmal an."; }
+  else { t = "Noch Luft nach oben"; m = "Eine Wiederholungsrunde lohnt sich – beim nächsten Mal läuft's besser."; }
+  $("end-title").textContent = t;
+  $("end-msg").textContent = m;
+}
+
+$("start-btn").addEventListener("click", start);
+$("restart-btn").addEventListener("click", start);
+$("next-btn").addEventListener("click", next);
+document.querySelectorAll(".joker").forEach(b => {
+  b.addEventListener("click", () => useJoker(b.dataset.jk));
+});
+</script>
+</body>
+</html>
